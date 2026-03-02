@@ -1,13 +1,13 @@
-import { PrismaClient } from "@prisma/client";
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
 
-// Store the client globally to reuse across requests in dev
 const globalForPrisma = globalThis as unknown as {
-    __prisma: PrismaClient | undefined;
+    __db: any | undefined;
 };
 
-export function db(): PrismaClient {
-    if (!globalForPrisma.__prisma) {
-        globalForPrisma.__prisma = new PrismaClient();
+export function db(): any {
+    if (!globalForPrisma.__db) {
+        const { PrismaClient } = require("@prisma/client");
+        globalForPrisma.__db = new PrismaClient();
     }
-    return globalForPrisma.__prisma;
+    return globalForPrisma.__db;
 }
