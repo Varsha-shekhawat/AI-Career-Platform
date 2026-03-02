@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPrisma } from "@/lib/prisma";
+import { getPrisma, getPrismaError } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { createUser as createFileUser } from "@/lib/userStore";
 
@@ -87,8 +87,9 @@ export async function POST(request: Request) {
         }
 
         // Neither storage backend worked
+        const prismaError = getPrismaError();
         return NextResponse.json(
-            { success: false, error: "Database is not configured. Please set DATABASE_URL in your environment variables." },
+            { success: false, error: `Database is not configured. ${prismaError || "Please set DATABASE_URL in your environment variables."}` },
             { status: 503 }
         );
     } catch (error) {
