@@ -31,7 +31,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Try database first, fall back to file storage
+        // Try database first
         const prisma = getPrisma();
         if (prisma) {
             try {
@@ -66,21 +66,31 @@ export async function POST(request: Request) {
             }
         }
 
-        // Fallback: file-based storage
-        const result = createFileUser(email, fullName, password);
-        if (!result.success) {
-            return NextResponse.json(
-                { success: false, error: result.error },
-                { status: 409 }
-            );
+        // Fallback: file-based storage (only works in local dev, not on Vercel)
+        try {
+            const result = createFileUser(email, fullName, password);
+            if (!result.success) {
+                return NextResponse.json(
+                    { success: false, error: result.error },
+                    { status: 409 }
+                );
+            }
+
+            const response = NextResponse.json({
+                success: true,
+                user: result.user,
+            });
+            setAuthCookie(response, result.user?.email || email);
+            return response;
+        } catch (fileError) {
+            console.warn("File-based signup also failed:", fileError);
         }
 
-        const response = NextResponse.json({
-            success: true,
-            user: result.user,
-        });
-        setAuthCookie(response, result.user?.email || email);
-        return response;
+        // Neither storage backend worked
+        return NextResponse.json(
+            { success: false, error: "Database is not configured. Please set DATABASE_URL in your environment variables." },
+            { status: 503 }
+        );
     } catch (error) {
         console.error("Signup error:", error);
         return NextResponse.json(
@@ -89,4 +99,5 @@ export async function POST(request: Request) {
         );
     }
 }
+
 

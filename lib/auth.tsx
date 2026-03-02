@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useRouter, usePathname } from "next/navigation";
 
 interface User {
     fullName: string;
@@ -23,35 +22,25 @@ const AUTH_KEY = "careerai_user";
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const router = useRouter();
-    const pathname = usePathname();
 
-    // Load user from localStorage on mount
+    // Load user from localStorage on mount and sync with cookie
     useEffect(() => {
         try {
             const stored = localStorage.getItem(AUTH_KEY);
             if (stored) {
                 setUser(JSON.parse(stored));
+            } else {
+                // No user in localStorage — clear any stale auth cookie
+                // This prevents redirect loops when cookie exists but localStorage is empty
+                fetch("/api/auth/logout", { method: "POST" }).catch(() => { });
             }
         } catch {
             localStorage.removeItem(AUTH_KEY);
+            fetch("/api/auth/logout", { method: "POST" }).catch(() => { });
         } finally {
             setIsLoading(false);
         }
     }, []);
-
-    // Redirect logic
-    useEffect(() => {
-        if (isLoading) return;
-
-        const isLoginPage = pathname === "/login";
-
-        if (!user && !isLoginPage) {
-            router.replace("/login");
-        } else if (user && isLoginPage) {
-            router.replace("/");
-        }
-    }, [user, isLoading, pathname, router]);
 
     const login = async (email: string, password: string): Promise<string | null> => {
         try {
@@ -69,6 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const userData: User = { email: data.user.email, fullName: data.user.fullName };
             localStorage.setItem(AUTH_KEY, JSON.stringify(userData));
             setUser(userData);
+            // Full page navigation ensures the auth cookie is sent with the request
+            window.location.href = "/";
             return null; // no error
         } catch {
             return "Network error. Please try again.";
@@ -91,6 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const userData: User = { email: data.user.email, fullName: data.user.fullName };
             localStorage.setItem(AUTH_KEY, JSON.stringify(userData));
             setUser(userData);
+            // Full page navigation ensures the auth cookie is sent with the request
+            window.location.href = "/";
             return null; // no error
         } catch {
             return "Network error. Please try again.";
@@ -106,7 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         localStorage.removeItem(AUTH_KEY);
         setUser(null);
-        router.replace("/login");
+        // Full page navigation to clear all client state
+        window.location.href = "/login";
     };
 
     return (
@@ -123,3 +117,4 @@ export function useAuth() {
     }
     return context;
 }
+

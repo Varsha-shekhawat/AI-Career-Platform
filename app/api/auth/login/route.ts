@@ -24,7 +24,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Try database first, fall back to file storage
+        // Try database first
         const prisma = getPrisma();
         if (prisma) {
             try {
@@ -48,27 +48,42 @@ export async function POST(request: Request) {
                     setAuthCookie(response, user.email);
                     return response;
                 }
-                // User not found in DB — also check file store below
+
+                // User not found in database
+                return NextResponse.json(
+                    { success: false, error: "No account found with this email. Please sign up first." },
+                    { status: 401 }
+                );
             } catch (dbError) {
                 console.warn("DB login failed, falling back to file storage:", dbError);
             }
         }
 
-        // Fallback: file-based storage
-        const result = authenticateFileUser(email, password);
-        if (!result.success) {
-            return NextResponse.json(
-                { success: false, error: result.error },
-                { status: 401 }
-            );
+        // Fallback: file-based storage (only works in local dev, not on Vercel)
+        try {
+            const result = authenticateFileUser(email, password);
+            if (!result.success) {
+                return NextResponse.json(
+                    { success: false, error: result.error },
+                    { status: 401 }
+                );
+            }
+
+            const response = NextResponse.json({
+                success: true,
+                user: result.user,
+            });
+            setAuthCookie(response, result.user?.email || email);
+            return response;
+        } catch (fileError) {
+            console.warn("File-based login also failed:", fileError);
         }
 
-        const response = NextResponse.json({
-            success: true,
-            user: result.user,
-        });
-        setAuthCookie(response, result.user?.email || email);
-        return response;
+        // Neither storage backend worked
+        return NextResponse.json(
+            { success: false, error: "Database is not configured. Please set DATABASE_URL in your environment variables." },
+            { status: 503 }
+        );
     } catch (error) {
         console.error("Login error:", error);
         return NextResponse.json(
@@ -77,3 +92,4 @@ export async function POST(request: Request) {
         );
     }
 }
+

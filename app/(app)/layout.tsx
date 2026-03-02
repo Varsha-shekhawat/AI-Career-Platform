@@ -44,9 +44,20 @@ export default function AppLayout({
     );
   }
 
-  // If not authenticated, render nothing (middleware handles redirect)
+  // If not authenticated, show loading spinner
+  // AuthProvider will clear stale cookies and middleware will redirect on next request
   if (!user) {
-    return null;
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "var(--bg-primary)" }}
+      >
+        <Loader2
+          className="w-8 h-8 animate-spin"
+          style={{ color: "var(--accent-blue)" }}
+        />
+      </div>
+    );
   }
 
   const userInitial = user?.fullName
