@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
-import { getPrisma } from "@/lib/prisma";
-import { saveAnalysis } from "@/lib/analysisStore";
+import { prisma } from "@/lib/prisma";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -77,31 +76,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // Save the analysis — try DB first, fall back to file storage
+    // Save the analysis to database
     let analysisId = null;
-    const analysisData = {
-      userId,
-      fileName: file.name,
-      candidateName: parsedAnalysis.candidate_name || "Unknown",
-      atsScore: parsedAnalysis.ats_score || 0,
-      scoreExplanation: parsedAnalysis.score_explanation || "",
-      strengths: parsedAnalysis.strengths || [],
-      weaknesses: parsedAnalysis.weaknesses || [],
-      recommendations: parsedAnalysis.recommendations || [],
-    };
-
-    const prisma = getPrisma();
-    if (prisma) {
-      try {
-        const saved = await prisma.resumeAnalysis.create({ data: analysisData });
-        analysisId = saved.id;
-      } catch (dbError) {
-        console.warn("DB save failed, using file storage:", dbError);
-        analysisId = saveAnalysis(analysisData);
-      }
-    } else {
-      // No DB available — use file storage
-      analysisId = saveAnalysis(analysisData);
+    try {
+      const saved = await prisma.resumeAnalysis.create({
+        data: {
+          userId,
+          fileName: file.name,
+          candidateName: parsedAnalysis.candidate_name || "Unknown",
+          atsScore: parsedAnalysis.ats_score || 0,
+          scoreExplanation: parsedAnalysis.score_explanation || "",
+          strengths: parsedAnalysis.strengths || [],
+          weaknesses: parsedAnalysis.weaknesses || [],
+          recommendations: parsedAnalysis.recommendations || [],
+        },
+      });
+      analysisId = saved.id;
+    } catch (dbError) {
+      console.warn("DB save failed:", dbError);
     }
 
     return NextResponse.json({

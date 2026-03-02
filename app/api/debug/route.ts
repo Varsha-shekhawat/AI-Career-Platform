@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPrisma, getPrismaError } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
     const hasDbUrl = !!process.env.DATABASE_URL;
@@ -7,20 +7,14 @@ export async function GET() {
         ? process.env.DATABASE_URL.substring(0, 20) + "..."
         : "NOT SET";
 
-    const prisma = getPrisma();
-    const prismaError = getPrismaError();
-
     let dbConnected = false;
     let dbError = null;
 
-    if (prisma) {
-        try {
-            // Try a simple query to test the connection
-            await prisma.$runCommandRaw({ ping: 1 });
-            dbConnected = true;
-        } catch (e: any) {
-            dbError = e?.message || "Connection test failed";
-        }
+    try {
+        await prisma.$runCommandRaw({ ping: 1 });
+        dbConnected = true;
+    } catch (e: unknown) {
+        dbError = e instanceof Error ? e.message : "Connection test failed";
     }
 
     return NextResponse.json({
@@ -28,8 +22,7 @@ export async function GET() {
         database: {
             DATABASE_URL_SET: hasDbUrl,
             DATABASE_URL_PREFIX: dbUrlPrefix,
-            PRISMA_CLIENT_LOADED: !!prisma,
-            PRISMA_ERROR: prismaError || null,
+            PRISMA_CLIENT_LOADED: true,
             DB_CONNECTED: dbConnected,
             DB_CONNECTION_ERROR: dbError,
         },
