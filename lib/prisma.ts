@@ -1,25 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 
+// Store the client globally to reuse across requests in dev
 const globalForPrisma = globalThis as unknown as {
-    prisma: PrismaClient | undefined;
+    __prisma: PrismaClient | undefined;
 };
 
-// Lazy initialization - don't create client at build time
-function getClient(): PrismaClient {
-    if (!globalForPrisma.prisma) {
-        globalForPrisma.prisma = new PrismaClient();
+export function db(): PrismaClient {
+    if (!globalForPrisma.__prisma) {
+        globalForPrisma.__prisma = new PrismaClient();
     }
-    return globalForPrisma.prisma;
+    return globalForPrisma.__prisma;
 }
-
-// Export a proxy that lazy-initializes on first use
-export const prisma = new Proxy({} as PrismaClient, {
-    get(_target, prop) {
-        const client = getClient();
-        const value = (client as any)[prop];
-        if (typeof value === "function") {
-            return value.bind(client);
-        }
-        return value;
-    },
-});

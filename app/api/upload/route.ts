@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/prisma";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -76,10 +76,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Save the analysis to database
     let analysisId = null;
     try {
-      const saved = await prisma.resumeAnalysis.create({
+      const saved = await db().resumeAnalysis.create({
         data: {
           userId,
           fileName: file.name,

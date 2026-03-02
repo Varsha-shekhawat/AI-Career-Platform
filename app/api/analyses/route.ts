@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/prisma";
 
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get("userId") || "unknown-user";
 
-        const analyses = await prisma.resumeAnalysis.findMany({
+        const analyses = await db().resumeAnalysis.findMany({
             where: { userId },
             orderBy: { createdAt: "desc" },
         });

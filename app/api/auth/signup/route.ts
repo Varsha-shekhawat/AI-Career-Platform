@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 
 function setAuthCookie(response: NextResponse, email: string) {
@@ -8,7 +8,7 @@ function setAuthCookie(response: NextResponse, email: string) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 60 * 24 * 7, // 7 days
+        maxAge: 60 * 60 * 24 * 7,
     });
 }
 
@@ -30,8 +30,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Check if user already exists
-        const existingUser = await prisma.user.findUnique({
+        const existingUser = await db().user.findUnique({
             where: { email: email.toLowerCase() },
         });
 
@@ -42,9 +41,8 @@ export async function POST(request: Request) {
             );
         }
 
-        // Create new user
         const passwordHash = hashPassword(password);
-        const user = await prisma.user.create({
+        const user = await db().user.create({
             data: {
                 email: email.toLowerCase(),
                 fullName,
