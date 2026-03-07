@@ -23,23 +23,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Load user from localStorage on mount and sync with cookie
+    // On mount: validate the session against the server
     useEffect(() => {
-        try {
-            const stored = localStorage.getItem(AUTH_KEY);
-            if (stored) {
-                setUser(JSON.parse(stored));
-            } else {
-                // No user in localStorage — clear any stale auth cookie
-                // This prevents redirect loops when cookie exists but localStorage is empty
+        async function validateSession() {
+            try {
+                const stored = localStorage.getItem(AUTH_KEY);
+
+                if (!stored) {
+                    // No local data — clear any stale cookie
+                    fetch("/api/auth/logout", { method: "POST" }).catch(() => { });
+                    setIsLoading(false);
+                    return;
+                }
+
+                // We have local data — validate with the server
+                const res = await fetch("/api/auth/validate");
+                const data = await res.json();
+
+                if (data.valid && data.user) {
+                    // Session is valid — use server-confirmed user data
+                    const userData: User = { email: data.user.email, fullName: data.user.fullName };
+                    localStorage.setItem(AUTH_KEY, JSON.stringify(userData));
+                    setUser(userData);
+                } else {
+                    // Session is invalid (stale cookie or user deleted) — clear everything
+                    localStorage.removeItem(AUTH_KEY);
+                    fetch("/api/auth/logout", { method: "POST" }).catch(() => { });
+                }
+            } catch {
+                // On error, clear everything to be safe
+                localStorage.removeItem(AUTH_KEY);
                 fetch("/api/auth/logout", { method: "POST" }).catch(() => { });
+            } finally {
+                setIsLoading(false);
             }
-        } catch {
-            localStorage.removeItem(AUTH_KEY);
-            fetch("/api/auth/logout", { method: "POST" }).catch(() => { });
-        } finally {
-            setIsLoading(false);
         }
+
+        validateSession();
     }, []);
 
     const login = async (email: string, password: string): Promise<string | null> => {
@@ -58,7 +78,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const userData: User = { email: data.user.email, fullName: data.user.fullName };
             localStorage.setItem(AUTH_KEY, JSON.stringify(userData));
             setUser(userData);
-            // Full page navigation ensures the auth cookie is sent with the request
+            // Small delay ensures the auth cookie from Set-Cookie is fully processed
+            await new Promise(r => setTimeout(r, 100));
             window.location.href = "/";
             return null; // no error
         } catch {
@@ -82,7 +103,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const userData: User = { email: data.user.email, fullName: data.user.fullName };
             localStorage.setItem(AUTH_KEY, JSON.stringify(userData));
             setUser(userData);
-            // Full page navigation ensures the auth cookie is sent with the request
+            // Small delay ensures the auth cookie from Set-Cookie is fully processed
+            await new Promise(r => setTimeout(r, 100));
             window.location.href = "/";
             return null; // no error
         } catch {
@@ -117,4 +139,3 @@ export function useAuth() {
     }
     return context;
 }
-

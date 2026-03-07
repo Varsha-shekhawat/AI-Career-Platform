@@ -5,7 +5,13 @@ export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const authCookie = request.cookies.get("auth_session")?.value;
 
-    // Protect app routes: if no cookie and NOT on /login, redirect to /login
+    // If authenticated and on /login, redirect to dashboard
+    if (authCookie && pathname === "/login") {
+        const homeUrl = new URL("/", request.url);
+        return NextResponse.redirect(homeUrl, 307);
+    }
+
+    // If not authenticated and NOT on /login, redirect to /login
     if (!authCookie && pathname !== "/login") {
         const loginUrl = new URL("/login", request.url);
         return NextResponse.redirect(loginUrl, 307);

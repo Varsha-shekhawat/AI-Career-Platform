@@ -44,9 +44,11 @@ export default function AppLayout({
     );
   }
 
-  // If not authenticated, show loading spinner
-  // AuthProvider will clear stale cookies and middleware will redirect on next request
+  // If not authenticated, redirect to login
   if (!user) {
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
     return (
       <div
         className="min-h-screen flex items-center justify-center"
@@ -149,11 +151,8 @@ export default function AppLayout({
             className="h-px mb-4"
             style={{ background: "var(--border-subtle)" }}
           />
-          <div
-            onClick={logout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-white/[0.03] cursor-pointer group"
-            title="Sign out"
-          >
+          {/* User info */}
+          <div className="flex items-center gap-3 px-3 py-2.5 mb-2">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
               style={{
@@ -174,11 +173,20 @@ export default function AppLayout({
                 {displayEmail}
               </p>
             </div>
-            <LogOut
-              className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity"
-              style={{ color: "var(--accent-rose)" }}
-            />
           </div>
+          {/* Sign Out button */}
+          <button
+            onClick={logout}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl transition-all hover:bg-white/[0.05] cursor-pointer"
+            style={{
+              border: "1px solid var(--border-medium)",
+              color: "var(--accent-rose)",
+            }}
+            title="Sign out"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="text-sm font-medium">Sign Out</span>
+          </button>
         </div>
       </aside>
 

@@ -3,27 +3,27 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model ResumeAnalysis {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  id               String   @id @default(cuid())
   userId           String
   fileName         String
   candidateName    String
   atsScore         Int
   scoreExplanation String
-  strengths        String[]
-  weaknesses       String[]
-  recommendations  String[]
+  strengths        String   // JSON-encoded array
+  weaknesses       String   // JSON-encoded array
+  recommendations  String   // JSON-encoded array
   createdAt        DateTime @default(now())
 
   @@index([userId])
 }
 
 model User {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String   @id @default(cuid())
   email        String   @unique
   fullName     String
   passwordHash String

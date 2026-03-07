@@ -85,9 +85,9 @@ export async function POST(request: Request) {
           candidateName: parsedAnalysis.candidate_name || "Unknown",
           atsScore: parsedAnalysis.ats_score || 0,
           scoreExplanation: parsedAnalysis.score_explanation || "",
-          strengths: parsedAnalysis.strengths || [],
-          weaknesses: parsedAnalysis.weaknesses || [],
-          recommendations: parsedAnalysis.recommendations || [],
+          strengths: JSON.stringify(parsedAnalysis.strengths || []),
+          weaknesses: JSON.stringify(parsedAnalysis.weaknesses || []),
+          recommendations: JSON.stringify(parsedAnalysis.recommendations || []),
         },
       });
       analysisId = saved.id;
