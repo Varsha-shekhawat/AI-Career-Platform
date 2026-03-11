@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -13,10 +13,10 @@ model ResumeAnalysis {
   fileName         String
   candidateName    String
   atsScore         Int
-  scoreExplanation String
-  strengths        String   // JSON-encoded array
-  weaknesses       String   // JSON-encoded array
-  recommendations  String   // JSON-encoded array
+  scoreExplanation String   @db.Text
+  strengths        String   @db.Text // JSON-encoded array
+  weaknesses       String   @db.Text // JSON-encoded array
+  recommendations  String   @db.Text // JSON-encoded array
   createdAt        DateTime @default(now())
 
   @@index([userId])
