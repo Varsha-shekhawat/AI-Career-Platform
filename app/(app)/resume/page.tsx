@@ -1,21 +1,6 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Upload,
-  FileText,
-  X,
-  CheckCircle2,
-  AlertTriangle,
-  Lightbulb,
-  Sparkles,
-  Loader2,
-  ArrowRight,
-  ShieldCheck,
-  Search,
-  AlertCircle,
-} from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,7 +32,7 @@ export default function ResumeScannerPage() {
       setError(null);
       setResult(null);
     } else {
-      setError("Please drop a PDF file.");
+      setError("Please drop a valid PDF document.");
     }
   }, []);
 
@@ -69,7 +54,7 @@ export default function ResumeScannerPage() {
 
   const handleAnalyze = async () => {
     if (!file) {
-      setError("Please select a PDF file first.");
+      setError("Please select or drop a PDF resume file.");
       return;
     }
 
@@ -92,7 +77,7 @@ export default function ResumeScannerPage() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || "Something went wrong during analysis.");
+        throw new Error(data.error || "Analysis failed. Please ensure the PDF is valid.");
       }
 
       setResult(data.analysis);
@@ -103,12 +88,6 @@ export default function ResumeScannerPage() {
     }
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "var(--accent-emerald)";
-    if (score >= 60) return "var(--accent-amber)";
-    return "var(--accent-rose)";
-  };
-
   const getScoreBadgeClass = (score: number) => {
     if (score >= 80) return "badge-green";
     if (score >= 60) return "badge-amber";
@@ -116,82 +95,68 @@ export default function ResumeScannerPage() {
   };
 
   const getScoreLabel = (score: number) => {
-    if (score >= 80) return "Excellent";
-    if (score >= 60) return "Good";
-    if (score >= 40) return "Needs Work";
-    return "Critical";
+    if (score >= 80) return "ATS Optimized";
+    if (score >= 60) return "Competitive";
+    if (score >= 40) return "Needs Revision";
+    return "Critical Flaws";
   };
 
   const getCertBadgeClass = (cert: string) => {
     if (cert?.includes("Optimized")) return "badge-green";
-    if (cert?.includes("Compatible") && !cert?.includes("Partially")) return "badge-blue";
+    if (cert?.includes("Compatible") && !cert?.includes("Partially")) return "badge-brand";
     if (cert?.includes("Partially")) return "badge-amber";
     return "badge-rose";
   };
 
-  // Calculate SVG circle progress
-  const scorePercent = result ? result.ats_score / 100 : 0;
-  const circumference = 2 * Math.PI * 45; // radius = 45
-  const strokeDashoffset = circumference * (1 - scorePercent);
-
-  const sectionScoreLabels: { key: string; label: string; color: string }[] = [
-    { key: "formatting", label: "Formatting", color: "var(--accent-blue)" },
-    { key: "content", label: "Content Quality", color: "var(--accent-violet)" },
-    { key: "skills", label: "Skills", color: "var(--accent-emerald)" },
-    { key: "experience", label: "Experience", color: "var(--accent-amber)" },
-    { key: "keywords", label: "Keywords", color: "var(--accent-rose)" },
+  const sectionScoreLabels: { key: string; label: string; desc: string }[] = [
+    { key: "formatting", label: "Structural Formatting", desc: "Hierarchy, margins, fonts, parseability" },
+    { key: "content", label: "Content Quality", desc: "Action verbs, quantifiable impact, brevity" },
+    { key: "skills", label: "Skills Density", desc: "Core technical tools & frameworks" },
+    { key: "experience", label: "Experience Relevance", desc: "Seniority trajectory & responsibility" },
+    { key: "keywords", label: "Keyword Matching", desc: "Industry terminology alignment" },
   ];
 
-  return (
-    <div className="max-w-4xl mx-auto">
-      {/* ─── Header ──────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="mb-8"
-      >
-        <h2 className="text-3xl font-bold tracking-tight">
-          ATS Resume <span className="gradient-text">Analyzer</span>
-        </h2>
-        <p className="mt-1.5" style={{ color: "var(--text-secondary)" }}>
-          Upload your resume and get an instant AI-powered ATS compatibility
-          score with detailed feedback
-        </p>
-      </motion.div>
+  const scorePercent = result ? result.ats_score / 100 : 0;
+  const circumference = 2 * Math.PI * 40;
+  const strokeDashoffset = circumference * (1 - scorePercent);
 
-      {/* ─── Upload Zone ─────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        className="glass-card p-8 mb-6"
-      >
+  return (
+    <div className="max-w-5xl mx-auto space-y-8">
+      {/* ─── Header ───────────────────────────────────────── */}
+      <div className="border-b border-[#E8E5DC] pb-5">
+        <span className="text-xs uppercase tracking-wider text-[#82877B] font-semibold">
+          Audit Module 01
+        </span>
+        <h1 className="font-editorial text-3xl font-normal text-[#181916] mt-1">
+          ATS Resume Analyzer
+        </h1>
+        <p className="text-sm text-[#505449] mt-1.5 max-w-2xl">
+          Evaluate your resume against enterprise Applicant Tracking System (ATS) parsing models. Discover structural flaws, keyword density gaps, and section completeness.
+        </p>
+      </div>
+
+      {/* ─── File Upload Section ──────────────────────────── */}
+      <div className="bg-[#FFFFFF] border border-[#E8E5DC] rounded-xl p-6 sm:p-7">
         {!file ? (
           <div
-            className={`upload-zone p-10 flex flex-col items-center text-center ${dragOver ? "drag-over" : ""
-              }`}
+            className={`upload-zone p-10 flex flex-col items-center text-center ${
+              dragOver ? "drag-over" : ""
+            }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onClick={() => fileInputRef.current?.click()}
           >
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 animate-float"
-              style={{ background: "var(--accent-blue-glow)" }}
-            >
-              <Upload
-                className="w-7 h-7"
-                style={{ color: "var(--accent-blue)" }}
-                strokeWidth={1.5}
-              />
+            <div className="w-12 h-12 rounded-full bg-[#EDF4F1] text-[#133B2E] flex items-center justify-center mb-3">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
             </div>
-            <p className="font-semibold text-[15px] mb-1">
-              Drop your resume here, or{" "}
-              <span style={{ color: "var(--accent-blue)" }}>browse</span>
+            <p className="font-semibold text-sm text-[#181916]">
+              Click to select or drag and drop your PDF resume
             </p>
-            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              Supports PDF files up to 10MB
+            <p className="text-xs text-[#82877B] mt-1">
+              Supports single or multi-page PDF documents up to 10MB
             </p>
             <input
               ref={fileInputRef}
@@ -202,551 +167,298 @@ export default function ResumeScannerPage() {
             />
           </div>
         ) : (
-          /* File Selected */
-          <div className="flex items-center gap-4">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: "rgba(99, 130, 255, 0.08)" }}
-            >
-              <FileText
-                className="w-5 h-5"
-                style={{ color: "var(--accent-blue)" }}
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{file.name}</p>
-              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                {(file.size / 1024).toFixed(1)} KB · PDF
-              </p>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-lg bg-[#FAF9F5] border border-[#E8E5DC]">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded bg-[#EDF4F1] text-[#133B2E] flex items-center justify-center font-bold text-xs shrink-0">
+                PDF
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-[#181916] truncate">
+                  {file.name}
+                </p>
+                <p className="text-xs text-[#82877B] mt-0.5">
+                  {(file.size / 1024).toFixed(1)} KB · Ready for parsing
+                </p>
+              </div>
             </div>
             <button
               onClick={clearFile}
-              className="p-2 rounded-lg hover:bg-white/[0.05] transition-colors"
+              className="text-xs font-semibold text-[#991B1B] hover:underline"
             >
-              <X
-                className="w-4 h-4"
-                style={{ color: "var(--text-secondary)" }}
-              />
+              Remove document
             </button>
           </div>
         )}
 
-        {/* Analyze Button */}
-        <button
-          onClick={handleAnalyze}
-          disabled={!file || loading}
-          className="btn-primary w-full mt-6 flex items-center justify-center gap-2.5 text-[15px]"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Analyzing with AI...
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-4 h-4" />
-              Analyze Resume
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
-
-        {/* Error */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="mt-4 p-4 rounded-xl flex items-start gap-3"
-              style={{
-                background: "rgba(244, 63, 94, 0.08)",
-                border: "1px solid rgba(244, 63, 94, 0.2)",
-              }}
-            >
-              <AlertTriangle
-                className="w-4 h-4 mt-0.5 shrink-0"
-                style={{ color: "var(--accent-rose)" }}
-              />
-              <p className="text-sm" style={{ color: "var(--accent-rose)" }}>
-                {error}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-
-      {/* ─── Loading Skeleton ────────────────────── */}
-      <AnimatePresence>
-        {loading && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="space-y-4"
+        {/* Action Button */}
+        <div className="mt-5 pt-5 border-t border-[#E8E5DC] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <span className="text-xs text-[#82877B]">
+            All uploaded files are analyzed in a secure sandbox.
+          </span>
+          <button
+            onClick={handleAnalyze}
+            disabled={!file || loading}
+            className="btn-primary text-sm py-2 px-6"
           >
-            <div className="glass-card p-8 flex items-center gap-6">
-              <div className="w-28 h-28 rounded-full shimmer" />
-              <div className="flex-1 space-y-3">
-                <div className="h-5 w-48 rounded shimmer" />
-                <div className="h-4 w-full rounded shimmer" />
-                <div className="h-4 w-3/4 rounded shimmer" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="glass-card p-6 space-y-3">
-                <div className="h-4 w-32 rounded shimmer" />
-                <div className="h-3 w-full rounded shimmer" />
-                <div className="h-3 w-5/6 rounded shimmer" />
-                <div className="h-3 w-4/6 rounded shimmer" />
-              </div>
-              <div className="glass-card p-6 space-y-3">
-                <div className="h-4 w-28 rounded shimmer" />
-                <div className="h-3 w-full rounded shimmer" />
-                <div className="h-3 w-5/6 rounded shimmer" />
-                <div className="h-3 w-3/6 rounded shimmer" />
-              </div>
-            </div>
-          </motion.div>
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                <span>Evaluating Rubric & Parsing PDF...</span>
+              </span>
+            ) : (
+              <span>Start ATS Compatibility Audit →</span>
+            )}
+          </button>
+        </div>
+
+        {/* Error Notification */}
+        {error && (
+          <div className="mt-4 p-3 rounded-md bg-[#FEF2F2] border border-[#FECACA] text-xs font-medium text-[#991B1B] flex items-start gap-2">
+            <span className="font-bold shrink-0">!</span>
+            <span>{error}</span>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
 
-      {/* ─── Analysis Results ────────────────────── */}
-      <AnimatePresence>
-        {result && !loading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-5"
-          >
-            {/* Score Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="glass-card p-8 flex flex-col md:flex-row items-center gap-8"
-            >
-              {/* Circular Score */}
-              <div className="relative shrink-0">
-                <svg
-                  width="120"
-                  height="120"
-                  viewBox="0 0 100 100"
-                  className="-rotate-90"
-                >
-                  {/* Background circle */}
+      {/* ─── Loading State ────────────────────────────────── */}
+      {loading && (
+        <div className="bg-[#FFFFFF] border border-[#E8E5DC] rounded-xl p-8 space-y-4">
+          <div className="flex items-center gap-3">
+            <svg className="w-5 h-5 animate-spin text-[#133B2E]" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            <p className="text-sm font-semibold text-[#181916]">
+              Running Multi-Stage ATS Analysis...
+            </p>
+          </div>
+          <div className="h-4 w-full skeleton" />
+          <div className="h-4 w-3/4 skeleton" />
+          <div className="h-20 w-full skeleton mt-4" />
+        </div>
+      )}
+
+      {/* ─── Analysis Results Presentation ────────────────── */}
+      {result && !loading && (
+        <div className="space-y-6">
+          {/* Executive Score Summary */}
+          <div className="bg-[#FFFFFF] border border-[#E8E5DC] rounded-xl p-6 sm:p-8">
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              {/* Circular Gauge */}
+              <div className="relative shrink-0 flex items-center justify-center">
+                <svg width="110" height="110" viewBox="0 0 100 100" className="-rotate-90">
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#E8E5DC" strokeWidth="6" />
                   <circle
                     cx="50"
                     cy="50"
-                    r="45"
+                    r="40"
                     fill="none"
-                    stroke="var(--border-subtle)"
-                    strokeWidth="6"
-                  />
-                  {/* Progress circle */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke={getScoreColor(result.ats_score)}
+                    stroke="#133B2E"
                     strokeWidth="6"
                     strokeLinecap="round"
                     strokeDasharray={circumference}
                     strokeDashoffset={strokeDashoffset}
-                    className="score-ring"
-                    style={{ transition: "stroke-dashoffset 1.5s ease-out" }}
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <motion.span
-                    className="text-3xl font-black"
-                    style={{ color: getScoreColor(result.ats_score) }}
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                  >
+                  <span className="font-editorial text-3xl font-normal text-[#181916]">
                     {result.ats_score}
-                  </motion.span>
-                  <span
-                    className="text-[10px] font-semibold uppercase tracking-widest"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    ATS
+                  </span>
+                  <span className="text-[10px] uppercase font-semibold text-[#82877B]">
+                    Score / 100
                   </span>
                 </div>
               </div>
 
               {/* Score Details */}
               <div className="flex-1 text-center md:text-left">
-                <div className="flex items-center gap-3 justify-center md:justify-start mb-2 flex-wrap">
-                  <h3 className="text-xl font-bold">
-                    {result.candidate_name || "Candidate"}
-                  </h3>
-                  <span
-                    className={`badge ${getScoreBadgeClass(result.ats_score)}`}
-                  >
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-2">
+                  <h2 className="text-xl font-bold text-[#181916]">
+                    {result.candidate_name || "Candidate Audit"}
+                  </h2>
+                  <span className={`badge ${getScoreBadgeClass(result.ats_score)}`}>
                     {getScoreLabel(result.ats_score)}
                   </span>
                   {result.ats_certification && (
-                    <span
-                      className={`badge ${getCertBadgeClass(result.ats_certification)}`}
-                      style={{ fontSize: "11px" }}
-                    >
-                      <ShieldCheck className="w-3 h-3" />
+                    <span className={`badge ${getCertBadgeClass(result.ats_certification)}`}>
                       {result.ats_certification}
                     </span>
                   )}
                 </div>
-                <p
-                  className="text-sm leading-relaxed"
-                  style={{ color: "var(--text-secondary)" }}
-                >
+                <p className="text-sm text-[#505449] leading-relaxed">
                   {result.score_explanation}
                 </p>
               </div>
-            </motion.div>
-
-            {/* Section Scores */}
-            {result.section_scores && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.2 }}
-                className="glass-card p-6"
-              >
-                <div className="flex items-center gap-2.5 mb-5">
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: "rgba(99, 130, 255, 0.1)" }}
-                  >
-                    <Sparkles
-                      className="w-4 h-4"
-                      style={{ color: "var(--accent-blue)" }}
-                    />
-                  </div>
-                  <h4 className="font-semibold text-[15px]">
-                    Section-by-Section Analysis
-                  </h4>
-                </div>
-                <div className="space-y-4">
-                  {sectionScoreLabels.map((section, i) => {
-                    const score = result.section_scores[section.key] || 0;
-                    return (
-                      <motion.div
-                        key={section.key}
-                        initial={{ opacity: 0, x: -12 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: 0.25 + 0.06 * i }}
-                      >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-sm font-medium">{section.label}</span>
-                          <span
-                            className="text-sm font-bold"
-                            style={{ color: getScoreColor(score) }}
-                          >
-                            {score}%
-                          </span>
-                        </div>
-                        <div
-                          className="h-2 rounded-full overflow-hidden"
-                          style={{ background: "rgba(255,255,255,0.05)" }}
-                        >
-                          <motion.div
-                            className="h-full rounded-full"
-                            style={{ background: section.color }}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${score}%` }}
-                            transition={{ duration: 1, delay: 0.3 + 0.06 * i, ease: "easeOut" }}
-                          />
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Strengths & Weaknesses */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Strengths */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: 0.3 }}
-                className="glass-card p-6"
-                style={{ borderColor: "rgba(52, 211, 153, 0.15)" }}
-              >
-                <div className="flex items-center gap-2.5 mb-5">
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: "rgba(52, 211, 153, 0.1)" }}
-                  >
-                    <CheckCircle2
-                      className="w-4 h-4"
-                      style={{ color: "var(--accent-emerald)" }}
-                    />
-                  </div>
-                  <h4 className="font-semibold text-[15px]">What Looks Good</h4>
-                </div>
-                <ul className="space-y-3">
-                  {result.strengths?.map((item: string, i: number) => (
-                    <motion.li
-                      key={i}
-                      initial={{ opacity: 0, x: -12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.4 + 0.06 * i }}
-                      className="flex items-start gap-2.5 text-sm"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      <span
-                        className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
-                        style={{ background: "var(--accent-emerald)" }}
-                      />
-                      {item}
-                    </motion.li>
-                  ))}
-                </ul>
-              </motion.div>
-
-              {/* Weaknesses */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: 0.3 }}
-                className="glass-card p-6"
-                style={{ borderColor: "rgba(244, 63, 94, 0.15)" }}
-              >
-                <div className="flex items-center gap-2.5 mb-5">
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: "rgba(244, 63, 94, 0.1)" }}
-                  >
-                    <AlertTriangle
-                      className="w-4 h-4"
-                      style={{ color: "var(--accent-rose)" }}
-                    />
-                  </div>
-                  <h4 className="font-semibold text-[15px]">Critical Flaws</h4>
-                </div>
-                <ul className="space-y-3">
-                  {result.weaknesses?.map((item: string, i: number) => (
-                    <motion.li
-                      key={i}
-                      initial={{ opacity: 0, x: 12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.4 + 0.06 * i }}
-                      className="flex items-start gap-2.5 text-sm"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      <span
-                        className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
-                        style={{ background: "var(--accent-rose)" }}
-                      />
-                      {item}
-                    </motion.li>
-                  ))}
-                </ul>
-              </motion.div>
             </div>
+          </div>
 
-            {/* Keyword Analysis */}
-            {result.keyword_analysis && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Found Keywords */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.4 }}
-                  className="glass-card p-6"
-                  style={{ borderColor: "rgba(99, 130, 255, 0.15)" }}
-                >
-                  <div className="flex items-center gap-2.5 mb-5">
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center"
-                      style={{ background: "rgba(99, 130, 255, 0.1)" }}
-                    >
-                      <Search
-                        className="w-4 h-4"
-                        style={{ color: "var(--accent-blue)" }}
-                      />
+          {/* Section Breakdown Grid */}
+          {result.section_scores && (
+            <div className="bg-[#FFFFFF] border border-[#E8E5DC] rounded-xl p-6 sm:p-7">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#82877B]">
+                Rubric Evaluation
+              </span>
+              <h3 className="text-base font-semibold text-[#181916] mt-0.5 mb-5 pb-3 border-b border-[#E8E5DC]">
+                Section-by-Section Scores
+              </h3>
+              <div className="space-y-4">
+                {sectionScoreLabels.map((sec) => {
+                  const score = result.section_scores[sec.key] || 0;
+                  return (
+                    <div key={sec.key} className="space-y-1.5">
+                      <div className="flex items-baseline justify-between text-xs">
+                        <div>
+                          <span className="font-semibold text-[#181916]">{sec.label}</span>
+                          <span className="text-[#82877B] ml-2 hidden sm:inline">· {sec.desc}</span>
+                        </div>
+                        <span className="font-mono font-bold text-[#181916]">{score}%</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-[#EBE8DE] overflow-hidden">
+                        <div
+                          className="h-full bg-[#133B2E] rounded-full"
+                          style={{ width: `${score}%` }}
+                        />
+                      </div>
                     </div>
-                    <h4 className="font-semibold text-[15px]">Keywords Found</h4>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {result.keyword_analysis.found_keywords?.map(
-                      (kw: string, i: number) => (
-                        <motion.span
-                          key={i}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.2, delay: 0.45 + 0.04 * i }}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                          style={{
-                            background: "rgba(99, 130, 255, 0.08)",
-                            color: "var(--accent-blue)",
-                            border: "1px solid rgba(99, 130, 255, 0.15)",
-                          }}
-                        >
-                          {kw}
-                        </motion.span>
-                      )
-                    )}
-                  </div>
-                </motion.div>
-
-                {/* Missing Keywords */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.4 }}
-                  className="glass-card p-6"
-                  style={{ borderColor: "rgba(251, 191, 36, 0.15)" }}
-                >
-                  <div className="flex items-center gap-2.5 mb-5">
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center"
-                      style={{ background: "rgba(251, 191, 36, 0.1)" }}
-                    >
-                      <AlertCircle
-                        className="w-4 h-4"
-                        style={{ color: "var(--accent-amber)" }}
-                      />
-                    </div>
-                    <h4 className="font-semibold text-[15px]">Missing Keywords</h4>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {result.keyword_analysis.missing_keywords?.map(
-                      (kw: string, i: number) => (
-                        <motion.span
-                          key={i}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.2, delay: 0.45 + 0.04 * i }}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                          style={{
-                            background: "rgba(251, 191, 36, 0.08)",
-                            color: "var(--accent-amber)",
-                            border: "1px solid rgba(251, 191, 36, 0.15)",
-                          }}
-                        >
-                          + {kw}
-                        </motion.span>
-                      )
-                    )}
-                  </div>
-                </motion.div>
+                  );
+                })}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Missing Sections */}
-            {result.missing_sections && result.missing_sections.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.45 }}
-                className="glass-card p-6"
-                style={{ borderColor: "rgba(244, 63, 94, 0.15)" }}
-              >
-                <div className="flex items-center gap-2.5 mb-5">
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: "rgba(244, 63, 94, 0.1)" }}
-                  >
-                    <AlertTriangle
-                      className="w-4 h-4"
-                      style={{ color: "var(--accent-rose)" }}
-                    />
-                  </div>
-                  <h4 className="font-semibold text-[15px]">Missing Sections</h4>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {result.missing_sections.map((section: string, i: number) => (
-                    <motion.span
-                      key={i}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.2, delay: 0.5 + 0.04 * i }}
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                      style={{
-                        background: "rgba(244, 63, 94, 0.08)",
-                        color: "var(--accent-rose)",
-                        border: "1px solid rgba(244, 63, 94, 0.15)",
-                      }}
-                    >
-                      {section}
-                    </motion.span>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Recommendations */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.5 }}
-              className="glass-card p-6"
-              style={{ borderColor: "rgba(99, 130, 255, 0.15)" }}
-            >
-              <div className="flex items-center gap-2.5 mb-5">
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center"
-                  style={{ background: "rgba(99, 130, 255, 0.1)" }}
-                >
-                  <Lightbulb
-                    className="w-4 h-4"
-                    style={{ color: "var(--accent-blue)" }}
-                  />
-                </div>
-                <h4 className="font-semibold text-[15px]">
-                  How to Improve Your Score
-                </h4>
+          {/* 2-Column Strengths vs Vulnerabilities */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Strengths */}
+            <div className="bg-[#FFFFFF] border border-[#E8E5DC] rounded-xl p-6">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#E8E5DC]">
+                <span className="w-2 h-2 rounded-full bg-[#165636]" />
+                <h3 className="text-sm font-semibold text-[#181916]">
+                  Validated Strengths ({result.strengths?.length || 0})
+                </h3>
               </div>
-              <ul className="space-y-3">
-                {result.recommendations?.map((item: string, i: number) => (
-                  <motion.li
-                    key={i}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.55 + 0.06 * i }}
-                    className="flex items-start gap-3 text-sm"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    <span
-                      className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 text-[10px] font-bold"
-                      style={{
-                        background: "rgba(99, 130, 255, 0.1)",
-                        color: "var(--accent-blue)",
-                      }}
-                    >
-                      {i + 1}
-                    </span>
-                    {item}
-                  </motion.li>
+              <ul className="space-y-2.5 text-xs text-[#505449]">
+                {result.strengths?.map((item: string, i: number) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <span className="text-[#165636] font-bold">✓</span>
+                    <span className="leading-relaxed">{item}</span>
+                  </li>
                 ))}
               </ul>
-            </motion.div>
+            </div>
 
-            {/* Analyze Another */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4, delay: 0.7 }}
-              className="text-center pt-2"
+            {/* Weaknesses */}
+            <div className="bg-[#FFFFFF] border border-[#E8E5DC] rounded-xl p-6">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#E8E5DC]">
+                <span className="w-2 h-2 rounded-full bg-[#991B1B]" />
+                <h3 className="text-sm font-semibold text-[#181916]">
+                  Critical Flaws & Vulnerabilities ({result.weaknesses?.length || 0})
+                </h3>
+              </div>
+              <ul className="space-y-2.5 text-xs text-[#505449]">
+                {result.weaknesses?.map((item: string, i: number) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <span className="text-[#991B1B] font-bold">✕</span>
+                    <span className="leading-relaxed">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Keyword Intelligence Matrix */}
+          {result.keyword_analysis && (
+            <div className="bg-[#FFFFFF] border border-[#E8E5DC] rounded-xl p-6 sm:p-7">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#82877B]">
+                Terminology Audit
+              </span>
+              <h3 className="text-base font-semibold text-[#181916] mt-0.5 mb-5 pb-3 border-b border-[#E8E5DC]">
+                Keyword Extraction Matrix
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-xs font-semibold text-[#181916] mb-3">
+                    Keywords Detected in Resume ({result.keyword_analysis.found_keywords?.length || 0})
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {result.keyword_analysis.found_keywords?.map((kw: string, i: number) => (
+                      <span key={i} className="badge badge-brand text-xs font-normal">
+                        {kw}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-[#181916] mb-3">
+                    Missing High-Value Keywords ({result.keyword_analysis.missing_keywords?.length || 0})
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {result.keyword_analysis.missing_keywords?.map((kw: string, i: number) => (
+                      <span key={i} className="badge badge-amber text-xs font-normal">
+                        + {kw}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Missing Structural Sections (if any) */}
+          {result.missing_sections && result.missing_sections.length > 0 && (
+            <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-xl p-6">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-bold text-[#991B1B]">Missing Structural Sections:</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {result.missing_sections.map((sec: string, i: number) => (
+                  <span key={i} className="badge badge-rose text-xs">
+                    {sec}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Actionable Recommendations */}
+          {result.recommendations && result.recommendations.length > 0 && (
+            <div className="bg-[#FFFFFF] border border-[#E8E5DC] rounded-xl p-6 sm:p-7">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#82877B]">
+                Optimization Protocol
+              </span>
+              <h3 className="text-base font-semibold text-[#181916] mt-0.5 mb-5 pb-3 border-b border-[#E8E5DC]">
+                Actionable Next Steps
+              </h3>
+              <div className="space-y-3">
+                {result.recommendations.map((rec: string, i: number) => (
+                  <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-[#FAF9F5] border border-[#E8E5DC]">
+                    <span className="w-5 h-5 rounded-full bg-[#133B2E] text-[#FFFFFF] text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                      {i + 1}
+                    </span>
+                    <p className="text-xs text-[#505449] leading-relaxed">
+                      {rec}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Bottom Action */}
+          <div className="text-center pt-2">
+            <button
+              onClick={clearFile}
+              className="text-xs font-semibold text-[#133B2E] hover:underline"
             >
-              <button
-                onClick={clearFile}
-                className="text-sm font-medium hover:underline"
-                style={{ color: "var(--accent-blue)" }}
-              >
-                ← Analyze another resume
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              ← Audit Another Resume File
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

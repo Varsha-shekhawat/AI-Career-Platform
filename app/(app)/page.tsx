@@ -2,19 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  FileSearch,
-  Briefcase,
-  MessageSquare,
-  TrendingUp,
-  Award,
-  BarChart3,
-  Clock,
-  ArrowUpRight,
-  FileText,
-  Sparkles,
-} from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 interface Analysis {
@@ -51,9 +38,7 @@ export default function Dashboard() {
   const totalAnalyses = analyses.length;
   const avgScore =
     totalAnalyses > 0
-      ? Math.round(
-        analyses.reduce((sum, a) => sum + a.atsScore, 0) / totalAnalyses
-      )
+      ? Math.round(analyses.reduce((sum, a) => sum + a.atsScore, 0) / totalAnalyses)
       : 0;
   const bestScore =
     totalAnalyses > 0 ? Math.max(...analyses.map((a) => a.atsScore)) : 0;
@@ -65,56 +50,12 @@ export default function Dashboard() {
     return "badge-rose";
   };
 
-  const stats = [
-    {
-      label: "Total Analyses",
-      value: totalAnalyses,
-      icon: BarChart3,
-      color: "var(--accent-blue)",
-    },
-    {
-      label: "Average Score",
-      value: avgScore > 0 ? `${avgScore}%` : "—",
-      icon: TrendingUp,
-      color: "var(--accent-violet)",
-    },
-    {
-      label: "Best Score",
-      value: bestScore > 0 ? `${bestScore}%` : "—",
-      icon: Award,
-      color: "var(--accent-emerald)",
-    },
-    {
-      label: "Latest Score",
-      value: latestScore > 0 ? `${latestScore}%` : "—",
-      icon: Clock,
-      color: "var(--accent-amber)",
-    },
-  ];
-
-  const tools = [
-    {
-      title: "Resume Analyzer",
-      desc: "Get your ATS score and AI-powered feedback on your resume",
-      icon: FileSearch,
-      href: "/resume",
-      gradient: "linear-gradient(135deg, #6382ff, #8b5cf6)",
-    },
-    {
-      title: "Job Match",
-      desc: "Match your resume against real job descriptions",
-      icon: Briefcase,
-      href: "/job-match",
-      gradient: "linear-gradient(135deg, #34d399, #6382ff)",
-    },
-    {
-      title: "Mock Interview",
-      desc: "Practice interviews with an AI interviewer",
-      icon: MessageSquare,
-      href: "/interview",
-      gradient: "linear-gradient(135deg, #f43f5e, #fbbf24)",
-    },
-  ];
+  const getScoreLabel = (score: number) => {
+    if (score >= 80) return "ATS Optimized";
+    if (score >= 60) return "Competitive";
+    if (score >= 40) return "Needs Revision";
+    return "Critical Flaws";
+  };
 
   // Build SVG chart data points (last 7 analyses, reversed to show chronological)
   const chartData = analyses
@@ -122,311 +63,374 @@ export default function Dashboard() {
     .reverse()
     .map((a) => a.atsScore);
 
-  return (
-    <div className="max-w-6xl mx-auto">
-      {/* ─── Header ──────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <h2 className="text-3xl font-bold tracking-tight">
-          Welcome back, <span className="gradient-text">{user?.fullName?.split(" ")[0] || ""} ✦</span>
-        </h2>
-        <p className="mt-1.5" style={{ color: "var(--text-secondary)" }}>
-          Your AI career toolkit at a glance
-        </p>
-      </motion.div>
+  const userName = user?.fullName?.split(" ")[0] || "there";
 
-      {/* ─── Stats Row ───────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-        {stats.map((stat, i) => {
-          const Icon = stat.icon;
-          return (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.05 * i }}
-              className="glass-card p-5"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p
-                    className="text-xs font-medium uppercase tracking-wider mb-2"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {stat.label}
-                  </p>
-                  <p className="text-2xl font-bold tracking-tight">
-                    {loading ? (
-                      <span className="inline-block w-12 h-7 rounded shimmer" />
-                    ) : (
-                      stat.value
-                    )}
-                  </p>
-                </div>
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ background: `${stat.color}15` }}
-                >
-                  <Icon
-                    className="w-5 h-5"
-                    style={{ color: stat.color }}
-                    strokeWidth={1.8}
-                  />
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
+  return (
+    <div className="space-y-8">
+      {/* ─── Editorial Header ─────────────────────────────── */}
+      <div className="border-b border-[#E8E5DC] pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+          <div>
+            <span className="text-xs uppercase tracking-wider text-[#82877B] font-semibold">
+              Career Intelligence Ledger
+            </span>
+            <h1 className="font-editorial text-3xl sm:text-4xl font-normal text-[#181916] mt-1">
+              Welcome back, {userName}.
+            </h1>
+          </div>
+          <div className="text-xs text-[#82877B] font-mono">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </div>
+        </div>
+        <p className="text-sm text-[#505449] mt-2 max-w-2xl">
+          Real-time summary of resume calibration, role-fit readiness, and simulated interview performance.
+        </p>
       </div>
 
-      {/* ─── Score Trend Chart ────────────────────── */}
-      <AnimatePresence>
-        {chartData.length >= 2 && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.25 }}
-            className="glass-card p-6 mt-6"
-          >
-            <div className="flex items-center justify-between mb-4">
+      {/* ─── Primary Intelligence Hero Section ────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        {/* Left: Score & Trajectory Analysis (7 cols) */}
+        <div className="lg:col-span-7 bg-[#FFFFFF] border border-[#E8E5DC] rounded-xl p-6 sm:p-7 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between border-b border-[#E8E5DC] pb-4 mb-5">
               <div>
-                <h3 className="font-semibold text-sm">Score Trend</h3>
-                <p
-                  className="text-xs mt-0.5"
-                  style={{ color: "var(--text-muted)" }}
-                >
-                  Your last {chartData.length} analyses
-                </p>
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#82877B]">
+                  ATS Calibration
+                </span>
+                <h2 className="text-base font-semibold text-[#181916] mt-0.5">
+                  Latest Resume Benchmark
+                </h2>
               </div>
-              <TrendingUp
-                className="w-4 h-4"
-                style={{ color: "var(--accent-emerald)" }}
-              />
+              {totalAnalyses > 0 && (
+                <span className={`badge ${getScoreBadge(latestScore)}`}>
+                  {getScoreLabel(latestScore)}
+                </span>
+              )}
             </div>
-            <svg
-              viewBox="0 0 400 100"
-              className="w-full h-24"
-              preserveAspectRatio="none"
-            >
-              {/* Gradient fill */}
-              <defs>
-                <linearGradient
-                  id="chartGradient"
-                  x1="0%"
-                  y1="0%"
-                  x2="0%"
-                  y2="100%"
-                >
-                  <stop
-                    offset="0%"
-                    stopColor="var(--accent-blue)"
-                    stopOpacity="0.3"
-                  />
-                  <stop
-                    offset="100%"
-                    stopColor="var(--accent-blue)"
-                    stopOpacity="0"
-                  />
-                </linearGradient>
-              </defs>
-              {/* Area */}
-              <path
-                d={`M ${chartData
-                  .map(
-                    (score, i) =>
-                      `${(i / (chartData.length - 1)) * 400},${100 - score}`
-                  )
-                  .join(" L ")} L 400,100 L 0,100 Z`}
-                fill="url(#chartGradient)"
-              />
-              {/* Line */}
-              <path
-                d={`M ${chartData
-                  .map(
-                    (score, i) =>
-                      `${(i / (chartData.length - 1)) * 400},${100 - score}`
-                  )
-                  .join(" L ")}`}
-                fill="none"
-                stroke="var(--accent-blue)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              {/* Dots */}
-              {chartData.map((score, i) => (
-                <circle
-                  key={i}
-                  cx={(i / (chartData.length - 1)) * 400}
-                  cy={100 - score}
-                  r="4"
-                  fill="var(--bg-primary)"
-                  stroke="var(--accent-blue)"
-                  strokeWidth="2"
-                />
-              ))}
-            </svg>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* ─── Tools Grid ──────────────────────────── */}
-      <div className="mt-8">
-        <h3 className="font-semibold text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
-          AI Tools
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {tools.map((tool, i) => {
-            const Icon = tool.icon;
-            return (
-              <motion.div
-                key={tool.title}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.3 + 0.05 * i }}
-              >
-                <Link href={tool.href}>
-                  <div className="glass-card p-6 group cursor-pointer relative overflow-hidden h-full">
-                    <div
-                      className="w-11 h-11 rounded-xl flex items-center justify-center mb-4"
-                      style={{ background: tool.gradient }}
-                    >
-                      <Icon className="w-5 h-5 text-white" strokeWidth={1.8} />
-                    </div>
-                    <h3 className="font-semibold text-[15px] mb-1.5 flex items-center gap-2">
-                      {tool.title}
-                      <ArrowUpRight
-                        className="w-3.5 h-3.5 opacity-0 group-hover:opacity-70 transition-opacity -translate-x-1 group-hover:translate-x-0"
-                        style={{
-                          color: "var(--text-secondary)",
-                          transition: "all 0.2s ease",
-                        }}
-                      />
-                    </h3>
-                    <p
-                      className="text-sm leading-relaxed"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      {tool.desc}
-                    </p>
-                  </div>
+            {loading ? (
+              <div className="py-12 space-y-3">
+                <div className="h-6 w-32 skeleton" />
+                <div className="h-4 w-full skeleton" />
+                <div className="h-24 w-full skeleton" />
+              </div>
+            ) : totalAnalyses === 0 ? (
+              <div className="py-8 text-center sm:text-left">
+                <p className="text-sm text-[#505449] mb-4">
+                  No resume audits recorded yet. Upload your PDF resume to generate an instant ATS compatibility score, parse keyword vulnerabilities, and review actionable feedback.
+                </p>
+                <Link href="/resume" className="btn-primary text-xs">
+                  Run First Resume Audit →
                 </Link>
-              </motion.div>
-            );
-          })}
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-baseline gap-3 mb-3">
+                  <span className="font-editorial text-5xl font-normal text-[#181916]">
+                    {latestScore}%
+                  </span>
+                  <span className="text-xs text-[#82877B]">
+                    for <strong className="text-[#181916]">{analyses[0]?.candidateName || "Candidate"}</strong> ({analyses[0]?.fileName})
+                  </span>
+                </div>
+
+                <p className="text-xs text-[#505449] leading-relaxed mb-6">
+                  Calculated using structural parseability, keyword density, section completion, and formatting compliance against enterprise applicant tracking systems.
+                </p>
+
+                {/* Score Trend SVG */}
+                {chartData.length >= 2 ? (
+                  <div className="bg-[#FAF9F5] border border-[#E8E5DC] rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-[#82877B]">
+                        Historical Trajectory ({chartData.length} submissions)
+                      </span>
+                      <span className="text-[11px] font-mono text-[#133B2E]">
+                        {chartData[0]}% → {chartData[chartData.length - 1]}%
+                      </span>
+                    </div>
+                    <svg viewBox="0 0 400 90" className="w-full h-20 overflow-visible" preserveAspectRatio="none">
+                      {/* Grid Lines */}
+                      <line x1="0" y1="20" x2="400" y2="20" stroke="#E8E5DC" strokeDasharray="3 3" />
+                      <line x1="0" y1="55" x2="400" y2="55" stroke="#E8E5DC" strokeDasharray="3 3" />
+
+                      {/* Area */}
+                      <path
+                        d={`M ${chartData
+                          .map((score, i) => `${(i / (chartData.length - 1)) * 400},${90 - (score * 0.75)}`)
+                          .join(" L ")} L 400,90 L 0,90 Z`}
+                        fill="#EDF4F1"
+                      />
+
+                      {/* Line */}
+                      <path
+                        d={`M ${chartData
+                          .map((score, i) => `${(i / (chartData.length - 1)) * 400},${90 - (score * 0.75)}`)
+                          .join(" L ")}`}
+                        fill="none"
+                        stroke="#133B2E"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+
+                      {/* Dots */}
+                      {chartData.map((score, i) => (
+                        <circle
+                          key={i}
+                          cx={(i / (chartData.length - 1)) * 400}
+                          cy={90 - (score * 0.75)}
+                          r="3.5"
+                          fill="#FFFFFF"
+                          stroke="#133B2E"
+                          strokeWidth="2"
+                        />
+                      ))}
+                    </svg>
+                  </div>
+                ) : (
+                  <div className="text-xs text-[#82877B] bg-[#FAF9F5] p-3 rounded border border-[#E8E5DC]">
+                    Trajectory trendline will activate after 2 or more resume audits.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="pt-4 mt-6 border-t border-[#E8E5DC] flex items-center justify-between text-xs">
+            <span className="text-[#82877B]">Standard: Enterprise ATS Rubric v2.4</span>
+            <Link href="/resume" className="text-[#133B2E] font-semibold hover:underline">
+              Analyze New Resume →
+            </Link>
+          </div>
+        </div>
+
+        {/* Right: Key Metric Ledger (5 cols) */}
+        <div className="lg:col-span-5 bg-[#FFFFFF] border border-[#E8E5DC] rounded-xl p-6 sm:p-7 flex flex-col justify-between">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#82877B]">
+              Summary Metrics
+            </span>
+            <h2 className="text-base font-semibold text-[#181916] mt-0.5 mb-5 pb-4 border-b border-[#E8E5DC]">
+              Performance Ledger
+            </h2>
+
+            <div className="divide-y divide-[#E8E5DC]">
+              <div className="py-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-[#181916]">Total Audits Completed</p>
+                  <p className="text-[11px] text-[#82877B]">Archived resume scans</p>
+                </div>
+                <span className="font-mono text-base font-semibold text-[#181916]">
+                  {loading ? "..." : totalAnalyses}
+                </span>
+              </div>
+
+              <div className="py-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-[#181916]">Average Compatibility</p>
+                  <p className="text-[11px] text-[#82877B]">Across all revisions</p>
+                </div>
+                <span className="font-mono text-base font-semibold text-[#181916]">
+                  {loading ? "..." : avgScore > 0 ? `${avgScore}%` : "—"}
+                </span>
+              </div>
+
+              <div className="py-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-[#181916]">Peak Benchmark</p>
+                  <p className="text-[11px] text-[#82877B]">Highest recorded score</p>
+                </div>
+                <span className="font-mono text-base font-semibold text-[#165636]">
+                  {loading ? "..." : bestScore > 0 ? `${bestScore}%` : "—"}
+                </span>
+              </div>
+
+              <div className="py-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-[#181916]">Readiness Assessment</p>
+                  <p className="text-[11px] text-[#82877B]">Overall market positioning</p>
+                </div>
+                <span className="text-xs font-medium text-[#181916]">
+                  {loading ? "..." : totalAnalyses === 0 ? "Not Assessed" : latestScore >= 75 ? "Market Ready" : "Optimization Advised"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-4 mt-6 border-t border-[#E8E5DC] text-xs text-[#82877B]">
+            Data synced with active profile session.
+          </div>
         </div>
       </div>
 
-      {/* ─── Recent Analyses ─────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.5 }}
-        className="mt-8"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-sm" style={{ color: "var(--text-secondary)" }}>
-            Recent Analyses
-          </h3>
-          {analyses.length > 5 && (
-            <Link
-              href="/resume"
-              className="text-xs font-medium hover:underline"
-              style={{ color: "var(--accent-blue)" }}
-            >
-              View all →
+      {/* ─── Structured Workflow Launchers ────────────────── */}
+      <div>
+        <div className="mb-4">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#82877B]">
+            Intelligence Modules
+          </span>
+          <h2 className="text-lg font-semibold text-[#181916] mt-0.5">
+            Core Career Workflows
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Module 1: Resume Analyzer */}
+          <Link
+            href="/resume"
+            className="group bg-[#FFFFFF] border border-[#E8E5DC] hover:border-[#133B2E] rounded-xl p-6 transition-all flex flex-col justify-between"
+          >
+            <div>
+              <div className="w-8 h-8 rounded bg-[#EDF4F1] text-[#133B2E] flex items-center justify-center font-bold text-xs mb-4">
+                01
+              </div>
+              <h3 className="text-base font-semibold text-[#181916] group-hover:text-[#133B2E] flex items-center justify-between">
+                <span>ATS Resume Scanner</span>
+                <span className="text-xs text-[#82877B] group-hover:text-[#133B2E] transition-colors">→</span>
+              </h3>
+              <p className="text-xs text-[#505449] mt-2 leading-relaxed">
+                Scan your PDF resume against applicant tracking rubrics to uncover missing keywords, formatting errors, and section gaps.
+              </p>
+            </div>
+            <div className="pt-4 mt-5 border-t border-[#E8E5DC] flex items-center justify-between text-[11px] text-[#82877B]">
+              <span>Input: PDF Document</span>
+              <span className="font-semibold text-[#133B2E]">Launch Audit</span>
+            </div>
+          </Link>
+
+          {/* Module 2: Job Match */}
+          <Link
+            href="/job-match"
+            className="group bg-[#FFFFFF] border border-[#E8E5DC] hover:border-[#133B2E] rounded-xl p-6 transition-all flex flex-col justify-between"
+          >
+            <div>
+              <div className="w-8 h-8 rounded bg-[#FAF5E8] text-[#854D0E] flex items-center justify-center font-bold text-xs mb-4">
+                02
+              </div>
+              <h3 className="text-base font-semibold text-[#181916] group-hover:text-[#133B2E] flex items-center justify-between">
+                <span>Role Fit Gap Analysis</span>
+                <span className="text-xs text-[#82877B] group-hover:text-[#133B2E] transition-colors">→</span>
+              </h3>
+              <p className="text-xs text-[#505449] mt-2 leading-relaxed">
+                Compare your resume against specific target job descriptions to identify qualification gaps, missing skills, and alignment opportunities.
+              </p>
+            </div>
+            <div className="pt-4 mt-5 border-t border-[#E8E5DC] flex items-center justify-between text-[11px] text-[#82877B]">
+              <span>Input: Resume + Job Spec</span>
+              <span className="font-semibold text-[#133B2E]">Analyze Match</span>
+            </div>
+          </Link>
+
+          {/* Module 3: Mock Interview */}
+          <Link
+            href="/interview"
+            className="group bg-[#FFFFFF] border border-[#E8E5DC] hover:border-[#133B2E] rounded-xl p-6 transition-all flex flex-col justify-between"
+          >
+            <div>
+              <div className="w-8 h-8 rounded bg-[#F1F5F9] text-[#334155] flex items-center justify-center font-bold text-xs mb-4">
+                03
+              </div>
+              <h3 className="text-base font-semibold text-[#181916] group-hover:text-[#133B2E] flex items-center justify-between">
+                <span>Mock Technical Interview</span>
+                <span className="text-xs text-[#82877B] group-hover:text-[#133B2E] transition-colors">→</span>
+              </h3>
+              <p className="text-xs text-[#505449] mt-2 leading-relaxed">
+                Conduct simulated technical and behavioral interviews tailored to your role and seniority, with immediate critique on each answer.
+              </p>
+            </div>
+            <div className="pt-4 mt-5 border-t border-[#E8E5DC] flex items-center justify-between text-[11px] text-[#82877B]">
+              <span>Input: Role & Seniority</span>
+              <span className="font-semibold text-[#133B2E]">Start Simulation</span>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* ─── Recent Analyses Audit Log ────────────────────── */}
+      <div className="bg-[#FFFFFF] border border-[#E8E5DC] rounded-xl p-6 sm:p-7">
+        <div className="flex items-center justify-between mb-5 pb-4 border-b border-[#E8E5DC]">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#82877B]">
+              Audit Log
+            </span>
+            <h2 className="text-base font-semibold text-[#181916] mt-0.5">
+              Recent Resume Analyses
+            </h2>
+          </div>
+          {analyses.length > 0 && (
+            <Link href="/resume" className="text-xs font-semibold text-[#133B2E] hover:underline">
+              Run New Scan →
             </Link>
           )}
         </div>
 
-        <div className="glass-card overflow-hidden">
-          {loading ? (
-            <div className="p-6 space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-center gap-4">
-                  <div className="w-9 h-9 rounded-lg shimmer" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-3.5 w-40 rounded shimmer" />
-                    <div className="h-3 w-24 rounded shimmer" />
-                  </div>
-                  <div className="h-6 w-14 rounded-full shimmer" />
-                </div>
-              ))}
-            </div>
-          ) : analyses.length === 0 ? (
-            /* Empty State */
-            <div className="p-12 text-center">
-              <div
-                className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-                style={{ background: "var(--accent-blue-glow)" }}
-              >
-                <Sparkles
-                  className="w-7 h-7"
-                  style={{ color: "var(--accent-blue)" }}
-                />
-              </div>
-              <h4 className="font-semibold mb-1.5">No analyses yet</h4>
-              <p
-                className="text-sm mb-5 max-w-xs mx-auto"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                Upload your first resume to get an AI-powered ATS score and
-                detailed feedback
-              </p>
-              <Link href="/resume">
-                <button className="btn-primary text-sm">
-                  Analyze Your Resume
-                </button>
-              </Link>
-            </div>
-          ) : (
-            /* Analyses List */
-            <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
-              {analyses.slice(0, 5).map((analysis, i) => (
-                <motion.div
-                  key={analysis.id}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.05 * i }}
-                  className="flex items-center gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors"
-                >
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ background: "rgba(99, 130, 255, 0.08)" }}
-                  >
-                    <FileText
-                      className="w-4 h-4"
-                      style={{ color: "var(--accent-blue)" }}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
+        {loading ? (
+          <div className="space-y-3 py-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-10 w-full skeleton" />
+            ))}
+          </div>
+        ) : analyses.length === 0 ? (
+          <div className="py-12 text-center border border-dashed border-[#DCD8CD] rounded-lg bg-[#FAF9F5]">
+            <p className="text-xs uppercase tracking-wider font-semibold text-[#82877B] mb-1">
+              Empty Audit Ledger
+            </p>
+            <p className="text-sm text-[#505449] max-w-sm mx-auto mb-4">
+              Your completed resume audits and ATS compatibility scores will appear in this ledger.
+            </p>
+            <Link href="/resume" className="btn-primary text-xs">
+              Upload Resume for Audit
+            </Link>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-[#E8E5DC] text-[#82877B] uppercase tracking-wider">
+                  <th className="py-2.5 font-semibold">Candidate</th>
+                  <th className="py-2.5 font-semibold">File Name</th>
+                  <th className="py-2.5 font-semibold">Date Analyzed</th>
+                  <th className="py-2.5 font-semibold text-right">ATS Score</th>
+                  <th className="py-2.5 font-semibold text-right">Classification</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E8E5DC]">
+                {analyses.slice(0, 6).map((analysis) => (
+                  <tr key={analysis.id} className="hover:bg-[#FAF9F5] transition-colors">
+                    <td className="py-3 font-semibold text-[#181916]">
                       {analysis.candidateName}
-                    </p>
-                    <p
-                      className="text-xs truncate"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      {analysis.fileName} ·{" "}
+                    </td>
+                    <td className="py-3 font-mono text-[#505449]">
+                      {analysis.fileName}
+                    </td>
+                    <td className="py-3 text-[#82877B]">
                       {new Date(analysis.createdAt).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
                       })}
-                    </p>
-                  </div>
-                  <span className={`badge ${getScoreBadge(analysis.atsScore)}`}>
-                    {analysis.atsScore}%
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </div>
-      </motion.div>
+                    </td>
+                    <td className="py-3 text-right font-mono font-bold text-[#181916]">
+                      {analysis.atsScore}%
+                    </td>
+                    <td className="py-3 text-right">
+                      <span className={`badge ${getScoreBadge(analysis.atsScore)}`}>
+                        {getScoreLabel(analysis.atsScore)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

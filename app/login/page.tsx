@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Sparkles, Mail, Lock, User, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 export default function LoginPage() {
@@ -20,7 +18,7 @@ export default function LoginPage() {
     setError(null);
 
     if (!email || !password) {
-      setError("Please fill in all fields.");
+      setError("Please fill in all required fields.");
       return;
     }
     if (!isLogin && !fullName.trim()) {
@@ -44,357 +42,210 @@ export default function LoginPage() {
         setError(errorMsg);
       }
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError("An unexpected network error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Show nothing while checking auth state (prevents flash)
   if (isLoading) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ background: "var(--bg-primary)" }}
-      >
-        <Loader2 className="w-8 h-8 animate-spin" style={{ color: "var(--accent-blue)" }} />
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF9F5]">
+        <div className="flex items-center gap-3 text-sm text-[#505449]">
+          <svg className="w-5 h-5 animate-spin text-[#133B2E]" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+          </svg>
+          <span>Authenticating session...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div
-      className="min-h-screen flex"
-      style={{ background: "var(--bg-primary)" }}
-    >
-      {/* ─── Left Panel: Branding ────────────────── */}
-      <div
-        className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center"
-        style={{ background: "var(--bg-secondary)" }}
-      >
-        {/* Gradient orbs */}
-        <div
-          className="absolute w-[500px] h-[500px] rounded-full blur-[150px] animate-float"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(99, 130, 255, 0.15) 0%, transparent 70%)",
-            top: "10%",
-            left: "20%",
-          }}
-        />
-        <div
-          className="absolute w-[400px] h-[400px] rounded-full blur-[120px]"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%)",
-            bottom: "15%",
-            right: "10%",
-            animation: "float 5s ease-in-out infinite 1s",
-          }}
-        />
-        <div
-          className="absolute w-[300px] h-[300px] rounded-full blur-[100px]"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(52, 211, 153, 0.08) 0%, transparent 70%)",
-            top: "50%",
-            left: "60%",
-            animation: "float 6s ease-in-out infinite 2s",
-          }}
-        />
-
-        {/* Content */}
-        <div className="relative z-10 px-16 max-w-lg">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 animate-pulse-glow"
-              style={{
-                background:
-                  "linear-gradient(135deg, var(--gradient-start), var(--gradient-end))",
-              }}
-            >
-              <Sparkles className="w-7 h-7 text-white" />
-            </div>
-
-            <h2 className="text-4xl font-bold tracking-tight mb-4">
-              Land your dream job <br />
-              <span className="gradient-text">with AI</span>
-            </h2>
-
-            <p
-              className="text-base leading-relaxed mb-10"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Analyze your resume with advanced AI, match it against real jobs,
-              practice mock interviews, and stand out from the competition.
-            </p>
-
-            {/* Feature pills */}
-            <div className="flex flex-wrap gap-3">
-              {[
-                "ATS Score Analysis",
-                "AI Feedback",
-                "Job Matching",
-                "Mock Interviews",
-              ].map((feature, i) => (
-                <motion.span
-                  key={feature}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: 0.4 + 0.1 * i }}
-                  className="px-4 py-2 rounded-full text-xs font-medium"
-                  style={{
-                    background: "rgba(99, 130, 255, 0.08)",
-                    color: "var(--accent-blue)",
-                    border: "1px solid rgba(99, 130, 255, 0.15)",
-                  }}
-                >
-                  {feature}
-                </motion.span>
-              ))}
-            </div>
-          </motion.div>
+    <div className="min-h-screen flex flex-col lg:flex-row bg-[#FAF9F5]">
+      {/* ─── Left Panel: Editorial Pillar ─────────────────── */}
+      <div className="lg:w-[48%] bg-[#133B2E] text-[#FAF9F5] p-10 lg:p-16 flex flex-col justify-between relative border-b lg:border-b-0 lg:border-r border-[#0B251D]">
+        {/* Top: Wordmark */}
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded bg-[#EDF4F1] text-[#133B2E] flex items-center justify-center font-bold text-sm font-editorial">
+            C
+          </div>
+          <div>
+            <span className="font-editorial text-lg font-bold tracking-tight text-[#FAF9F5]">
+              CareerAI
+            </span>
+            <span className="ml-2 text-[11px] uppercase tracking-widest text-[#BED8CE] font-medium">
+              Intelligence
+            </span>
+          </div>
         </div>
 
-        {/* Border */}
-        <div
-          className="absolute right-0 top-0 bottom-0 w-px"
-          style={{ background: "var(--border-subtle)" }}
-        />
+        {/* Editorial Headline & Supporting Copy */}
+        <div className="max-w-md my-auto py-12 lg:py-16">
+          <p className="text-xs uppercase tracking-widest text-[#BED8CE] font-semibold mb-4">
+            CAREER INTELLIGENCE
+          </p>
+          <h1 className="font-editorial text-3xl lg:text-4xl font-normal leading-tight text-[#FAF9F5] mb-4">
+            Build a career with better intelligence.
+          </h1>
+          <p className="text-sm leading-relaxed text-[#D2E4DC]">
+            Understand your resume, match your skills to opportunities, and prepare with confidence.
+          </p>
+        </div>
+
+        {/* Subtle Analytical Graphic (Understated editorial data trajectory) */}
+        <div className="pt-6 border-t border-[#1D5442] max-w-md">
+          <div className="flex items-center justify-between text-[11px] font-mono tracking-wider text-[#BED8CE]/80 mb-3">
+            <span>CALIBRATION LEDGER</span>
+            <span>SYSTEM READY</span>
+          </div>
+          <svg viewBox="0 0 360 44" className="w-full h-9 overflow-visible" fill="none">
+            <line x1="0" y1="34" x2="360" y2="34" stroke="#1D5442" strokeDasharray="3 3" strokeWidth="1" />
+            <line x1="0" y1="12" x2="360" y2="12" stroke="#1D5442" strokeDasharray="3 3" strokeWidth="1" />
+            <path
+              d="M 8 32 C 70 30, 120 25, 175 18 C 235 11, 295 13, 352 6"
+              stroke="#BED8CE"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <circle cx="8" cy="32" r="2.5" fill="#133B2E" stroke="#BED8CE" strokeWidth="1.5" />
+            <circle cx="175" cy="18" r="2.5" fill="#133B2E" stroke="#BED8CE" strokeWidth="1.5" />
+            <circle cx="352" cy="6" r="2.5" fill="#BED8CE" />
+          </svg>
+          <div className="flex items-center justify-between text-[10px] font-mono text-[#8FBBA9] mt-2">
+            <span>Audit</span>
+            <span>Alignment</span>
+            <span>Prepared</span>
+          </div>
+        </div>
       </div>
 
-      {/* ─── Right Panel: Form ───────────────────── */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="w-full max-w-md"
-        >
-          {/* Mobile logo */}
-          <div className="lg:hidden mb-10 flex items-center gap-2.5">
-            <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center"
-              style={{
-                background:
-                  "linear-gradient(135deg, var(--gradient-start), var(--gradient-end))",
-              }}
-            >
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <h1 className="text-lg font-bold gradient-text">CareerAI</h1>
-          </div>
-
+      {/* ─── Right Panel: Authentication Form ─────────────── */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 lg:p-16">
+        <div className="w-full max-w-md">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-2xl font-bold tracking-tight mb-2">
-              {isLogin ? "Welcome back" : "Create your account"}
-            </h1>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            <h2 className="font-editorial text-2xl lg:text-3xl font-normal text-[#181916] mb-2">
+              {isLogin ? "Sign in to your account" : "Create your career profile"}
+            </h2>
+            <p className="text-sm text-[#505449]">
               {isLogin
-                ? "Enter your credentials to access your dashboard"
-                : "Sign up to start analyzing your resumes with AI"}
+                ? "Enter your credentials to access your intelligence dashboard."
+                : "Enter your details to begin analyzing resumes and job matches."}
             </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <label
-                  className="block text-xs font-semibold uppercase tracking-wider mb-2"
-                  style={{ color: "var(--text-muted)" }}
-                >
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#505449] mb-1.5">
                   Full Name
                 </label>
-                <div className="relative">
-                  <User
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4"
-                    style={{ color: "var(--text-muted)" }}
-                  />
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 rounded-xl text-sm font-medium outline-none transition-all duration-200"
-                    style={{
-                      background: "rgba(255, 255, 255, 0.03)",
-                      border: "1px solid var(--border-medium)",
-                      color: "var(--text-primary)",
-                    }}
-                    placeholder="John Doe"
-                    onFocus={(e) =>
-                      (e.target.style.borderColor = "var(--accent-blue)")
-                    }
-                    onBlur={(e) =>
-                      (e.target.style.borderColor = "var(--border-medium)")
-                    }
-                  />
-                </div>
-              </motion.div>
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="form-input"
+                  placeholder="e.g. Alex Morgan"
+                />
+              </div>
             )}
 
             <div>
-              <label
-                className="block text-xs font-semibold uppercase tracking-wider mb-2"
-                style={{ color: "var(--text-muted)" }}
-              >
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#505449] mb-1.5">
                 Email Address
               </label>
-              <div className="relative">
-                <Mail
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4"
-                  style={{ color: "var(--text-muted)" }}
-                />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 rounded-xl text-sm font-medium outline-none transition-all duration-200"
-                  style={{
-                    background: "rgba(255, 255, 255, 0.03)",
-                    border: "1px solid var(--border-medium)",
-                    color: "var(--text-primary)",
-                  }}
-                  placeholder="you@example.com"
-                  onFocus={(e) =>
-                    (e.target.style.borderColor = "var(--accent-blue)")
-                  }
-                  onBlur={(e) =>
-                    (e.target.style.borderColor = "var(--border-medium)")
-                  }
-                />
-              </div>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="form-input"
+                placeholder="name@company.com"
+              />
             </div>
 
             <div>
-              <label
-                className="block text-xs font-semibold uppercase tracking-wider mb-2"
-                style={{ color: "var(--text-muted)" }}
-              >
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#505449]">
+                  Password
+                </label>
+                {isLogin && (
+                  <span className="text-xs text-[#82877B] cursor-default">
+                    6+ characters
+                  </span>
+                )}
+              </div>
               <div className="relative">
-                <Lock
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4"
-                  style={{ color: "var(--text-muted)" }}
-                />
                 <input
                   type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-11 pr-12 py-3 rounded-xl text-sm font-medium outline-none transition-all duration-200"
-                  style={{
-                    background: "rgba(255, 255, 255, 0.03)",
-                    border: "1px solid var(--border-medium)",
-                    color: "var(--text-primary)",
-                  }}
+                  className="form-input pr-16"
                   placeholder="••••••••"
-                  onFocus={(e) =>
-                    (e.target.style.borderColor = "var(--accent-blue)")
-                  }
-                  onBlur={(e) =>
-                    (e.target.style.borderColor = "var(--border-medium)")
-                  }
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-0.5 rounded-md hover:bg-white/[0.05] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#82877B] hover:text-[#181916] px-1 py-0.5 rounded transition-colors"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
-                  ) : (
-                    <Eye className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
-                  )}
+                  {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
             </div>
 
-            {isLogin && (
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  className="text-xs font-medium hover:underline"
-                  style={{ color: "var(--accent-blue)" }}
-                >
-                  Forgot password?
-                </button>
+            {/* Error Message */}
+            {error && (
+              <div className="p-3 rounded-md bg-[#FEF2F2] border border-[#FECACA] text-xs font-medium text-[#991B1B] flex items-start gap-2">
+                <span className="font-bold shrink-0">!</span>
+                <span>{error}</span>
               </div>
             )}
 
-            {/* Error Message */}
-            {error && (
-              <motion.p
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-sm text-center py-2 px-4 rounded-xl"
-                style={{
-                  color: "var(--accent-rose)",
-                  background: "rgba(244, 63, 94, 0.08)",
-                  border: "1px solid rgba(244, 63, 94, 0.15)",
-                }}
+            {/* Submit Button */}
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={loading || !email || !password}
+                className="btn-primary w-full py-2.5 text-sm"
               >
-                {error}
-              </motion.p>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading || !email || !password}
-              className="btn-primary w-full flex items-center justify-center gap-2.5 text-[15px] mt-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  {isLogin ? "Signing in..." : "Creating account..."}
-                </>
-              ) : (
-                <>
-                  {isLogin ? "Sign In" : "Create Account"}
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                    <span>{isLogin ? "Signing in..." : "Creating account..."}</span>
+                  </span>
+                ) : (
+                  <span>{isLogin ? "Sign In" : "Create Account"}</span>
+                )}
+              </button>
+            </div>
           </form>
 
-          {/* Toggle */}
-          <div
-            className="mt-8 text-center text-sm"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
+          {/* Form Toggle */}
+          <div className="mt-8 pt-6 border-t border-[#E8E5DC] text-center text-xs text-[#505449]">
+            {isLogin ? "Don't have an account yet?" : "Already have an account?"}{" "}
             <button
               onClick={() => {
                 setIsLogin(!isLogin);
                 setError(null);
               }}
-              className="font-semibold hover:underline"
-              style={{ color: "var(--accent-blue)" }}
+              className="font-semibold text-[#133B2E] underline underline-offset-2 hover:text-[#0C281F]"
             >
-              {isLogin ? "Sign up" : "Log in"}
+              {isLogin ? "Sign up here" : "Sign in here"}
             </button>
           </div>
 
-          {/* Footer */}
-          <p
-            className="mt-10 text-center text-[11px]"
-            style={{ color: "var(--text-muted)" }}
-          >
-            By continuing, you agree to our Terms of Service and Privacy Policy
+          <p className="mt-8 text-center text-[11px] text-[#82877B]">
+            Career intelligence data is strictly private and associated with your user session.
           </p>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
